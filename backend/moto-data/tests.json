@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "GET moto data",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {"km": 8450},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
