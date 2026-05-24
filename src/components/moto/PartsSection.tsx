@@ -12,6 +12,12 @@ function zzapUrl(query: string) {
 function megazipUrl(query: string) {
   return `https://www.megazip.net/search?q=${encodeURIComponent(query)}`;
 }
+function emotoUrl(query: string) {
+  return `https://emoto.ru/catalog/?q=${encodeURIComponent(query)}`;
+}
+function motoRazborkaUrl(query: string) {
+  return `https://www.moto-razborka.ru/search/?q=${encodeURIComponent(query)}`;
+}
 
 const SHOP_SOURCES = [
   {
@@ -20,6 +26,7 @@ const SHOP_SOURCES = [
     icon: "Search",
     getUrl: avitoUrl,
     hoverCls: "hover:bg-[#00AAFF]/15 hover:border-[#00AAFF] hover:text-[#60C8FF]",
+    badge: null,
   },
   {
     key: "zzap",
@@ -27,6 +34,7 @@ const SHOP_SOURCES = [
     icon: "Wrench",
     getUrl: zzapUrl,
     hoverCls: "hover:bg-orange-500/10 hover:border-orange-500 hover:text-orange-400",
+    badge: null,
   },
   {
     key: "megazip",
@@ -34,6 +42,23 @@ const SHOP_SOURCES = [
     icon: "Globe",
     getUrl: megazipUrl,
     hoverCls: "hover:bg-emerald-500/10 hover:border-emerald-500 hover:text-emerald-400",
+    badge: null,
+  },
+  {
+    key: "emoto",
+    label: "Emoto",
+    icon: "ShoppingBag",
+    getUrl: emotoUrl,
+    hoverCls: "hover:bg-violet-500/10 hover:border-violet-500 hover:text-violet-400",
+    badge: null,
+  },
+  {
+    key: "razborka",
+    label: "Разборка",
+    icon: "Recycle",
+    getUrl: motoRazborkaUrl,
+    hoverCls: "hover:bg-amber-500/10 hover:border-amber-500 hover:text-amber-400",
+    badge: "б/у",
   },
 ];
 
@@ -68,7 +93,7 @@ export function Parts({ activeProfile }: { activeProfile?: MotoProfile }) {
   const [search, setSearch] = useState("");
   const [compare, setCompare] = useState<number[]>([]);
   const [showCompare, setShowCompare] = useState(false);
-  const [profileSource, setProfileSource] = useState<"avito" | "zzap" | "megazip">("avito");
+  const [profileSource, setProfileSource] = useState<"avito" | "zzap" | "megazip" | "emoto" | "razborka">("avito");
 
   const categories = ["Все", "Расходники", "Оригинальные детали", "Аналоги"];
   const stockColor: Record<string, string> = { есть: "text-emerald-600", нет: "text-red-500", заказать: "text-amber-600" };
@@ -121,14 +146,17 @@ export function Parts({ activeProfile }: { activeProfile?: MotoProfile }) {
               </div>
             </div>
             {/* Переключатель источника */}
-            <div className="flex items-center gap-1 rounded-lg border border-border bg-card/60 p-0.5">
-              {(["avito", "zzap", "megazip"] as const).map(src => (
+            <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card/60 p-0.5">
+              {SHOP_SOURCES.map(src => (
                 <button
-                  key={src}
-                  onClick={() => setProfileSource(src)}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${profileSource === src ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  key={src.key}
+                  onClick={() => setProfileSource(src.key as typeof profileSource)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${profileSource === src.key ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 >
-                  {src === "avito" ? "Авито" : src === "zzap" ? "Zzap" : "Megazip"}
+                  {src.label}
+                  {src.badge && (
+                    <span className="text-[9px] px-1 py-0.5 rounded bg-amber-500/20 text-amber-400 leading-none">{src.badge}</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -136,7 +164,8 @@ export function Parts({ activeProfile }: { activeProfile?: MotoProfile }) {
           <div className="flex flex-wrap gap-2">
             {PART_QUERIES.map(({ label, key }) => {
               const query = buildProfileQuery(activeProfile, key);
-              const url = profileSource === "avito" ? avitoUrl(query) : profileSource === "zzap" ? zzapUrl(query) : megazipUrl(query);
+              const srcDef = SHOP_SOURCES.find(s => s.key === profileSource) ?? SHOP_SOURCES[0];
+              const url = srcDef.getUrl(query);
               return (
                 <a
                   key={key}
