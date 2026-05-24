@@ -3,11 +3,13 @@ import Icon from "@/components/ui/icon";
 import { apiGet, apiPost, NavSection, MaintenanceLogEntry, INITIAL_KM, MOTO, NAV_ITEMS } from "@/components/moto/moto.types";
 import { Dashboard, Systems, Manual } from "@/components/moto/MotoSections";
 import { Maintenance, Parts, Service, AIChat } from "@/components/moto/MotoMaintenance";
+import { ProfileSection, MotoProfile } from "@/components/moto/ProfileSection";
 
 export default function Index() {
   const [section, setSection] = useState<NavSection>("dashboard");
   const [km, setKm] = useState(INITIAL_KM);
   const [maintenanceLog, setMaintenanceLog] = useState<MaintenanceLogEntry[]>([]);
+  const [profiles, setProfiles] = useState<MotoProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -16,6 +18,7 @@ export default function Index() {
     apiGet().then(data => {
       if (data.km) setKm(data.km);
       if (data.maintenance_log) setMaintenanceLog(data.maintenance_log);
+      if (data.profiles) setProfiles(data.profiles);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -56,15 +59,24 @@ export default function Index() {
         className={`fixed lg:static inset-y-0 left-0 z-30 flex flex-col w-64 bg-[hsl(var(--sidebar-background))] transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       >
         <div className="px-5 py-5 border-b border-[hsl(var(--sidebar-border))]">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-[hsl(var(--sidebar-primary))] rounded-lg p-1.5">
-              <Icon name="Bike" size={20} className="text-white" />
-            </div>
-            <div>
-              <p className="font-display font-bold text-white leading-tight text-sm tracking-wide">GSX-S1000</p>
-              <p className="text-xs opacity-60" style={{ color: "hsl(var(--sidebar-foreground))" }}>{MOTO.year} · {km.toLocaleString()} км</p>
-            </div>
-          </div>
+          {(() => {
+            const active = profiles.find(p => p.is_active);
+            return (
+              <div className="flex items-center gap-2.5">
+                <div className="bg-[hsl(var(--sidebar-primary))] rounded-lg p-1.5 flex-shrink-0">
+                  <Icon name="Bike" size={20} className="text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-display font-bold text-white leading-tight text-sm tracking-wide truncate">
+                    {active ? `${active.brand} ${active.model}` : MOTO.model}
+                  </p>
+                  <p className="text-xs opacity-60 truncate" style={{ color: "hsl(var(--sidebar-foreground))" }}>
+                    {active ? active.year : MOTO.year} · {km.toLocaleString()} км
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
@@ -104,6 +116,7 @@ export default function Index() {
 
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           {section === "dashboard" && <Dashboard km={km} setKm={handleSetKm} />}
+          {section === "profile" && <ProfileSection profiles={profiles} onProfilesChange={setProfiles} />}
           {section === "systems" && <Systems />}
           {section === "manual" && <Manual />}
           {section === "maintenance" && <Maintenance km={km} maintenanceLog={maintenanceLog} onAddLog={handleAddLog} />}

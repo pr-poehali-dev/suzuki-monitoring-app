@@ -18,6 +18,7 @@ export async function apiPost(body: object) {
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type NavSection =
   | "dashboard"
+  | "profile"
   | "systems"
   | "manual"
   | "maintenance"
@@ -354,6 +355,7 @@ export const statusIcon: Record<Status, string> = {
 // ─── Nav items ────────────────────────────────────────────────────────────────
 export const NAV_ITEMS: { id: NavSection; icon: string; label: string }[] = [
   { id: "dashboard", icon: "LayoutDashboard", label: "Панель управления" },
+  { id: "profile", icon: "UserCircle2", label: "Мои мотоциклы" },
   { id: "systems", icon: "Layers", label: "Системы мотоцикла" },
   { id: "manual", icon: "BookOpen", label: "Инструкция" },
   { id: "maintenance", icon: "Wrench", label: "Техобслуживание" },
