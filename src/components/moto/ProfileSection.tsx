@@ -2,6 +2,8 @@ import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { apiPost } from "./moto.types";
 
+const VIN_DECODE_URL = "https://functions.poehali.dev/969ef91d-bb0f-4111-aed2-6ba8a3a2296c";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface MotoProfile {
   id: number;
@@ -20,10 +22,189 @@ export interface MotoProfile {
   created_at: string;
 }
 
+interface VinResult {
+  brand?: string;
+  model?: string;
+  year?: number;
+  engine_cc?: number;
+  engine_hp?: number;
+  cylinders?: number;
+  fuel_type?: string;
+  vehicle_type?: string;
+  manufacturer?: string;
+  plant_country?: string;
+  plant_city?: string;
+  body_class?: string;
+  series?: string;
+  trim?: string;
+  is_motorcycle?: boolean;
+  error_code?: string;
+  parts_query?: Record<string, string>;
+}
+
 const EMPTY_FORM = {
   name: "", brand: "", model: "", year: new Date().getFullYear(),
-  engine_cc: "", color: "", vin: "", purchase_date: "", purchase_km: "", current_km: "", notes: "",
+  engine_cc: "", color: "", vin: "", purchase_date: "",
+  purchase_km: "", current_km: "", notes: "",
 };
+
+// ─── VinDecoder ───────────────────────────────────────────────────────────────
+function VinDecoder({ onFill }: { onFill: (data: Partial<typeof EMPTY_FORM>) => void }) {
+  const [vin, setVin] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<VinResult | null>(null);
+  const [error, setError] = useState("");
+
+  const decode = async () => {
+    const clean = vin.trim().toUpperCase();
+    if (clean.length < 11) { setError("Введите минимум 11 символов VIN"); return; }
+    setLoading(true); setError(""); setResult(null);
+    try {
+      const res = await fetch(`${VIN_DECODE_URL}?vin=${clean}`);
+      const data: VinResult = await res.json();
+      if (!data.brand) { setError("Не удалось декодировать VIN. Проверьте номер."); }
+      else { setResult(data); }
+    } catch {
+      setError("Ошибка соединения. Попробуйте ещё раз.");
+    }
+    setLoading(false);
+  };
+
+  const handleFill = () => {
+    if (!result) return;
+    onFill({
+      brand: result.brand ? _capitalize(result.brand) : "",
+      model: result.model || "",
+      year: result.year ?? new Date().getFullYear(),
+      engine_cc: result.engine_cc?.toString() || "",
+      vin: vin.trim().toUpperCase(),
+    });
+    setResult(null); setVin("");
+  };
+
+  return (
+    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+      <div className="flex items-center gap-2 text-primary">
+        <Icon name="ScanLine" size={18} />
+        <p className="font-display font-semibold tracking-wide text-sm">Заполнить по VIN</p>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Введите VIN-номер мотоцикла — марка, модель и год подставятся автоматически через базу данных NHTSA (США).
+      </p>
+      <div className="flex gap-2">
+        <input
+          value={vin}
+          onChange={e => setVin(e.target.value.toUpperCase())}
+          onKeyDown={e => e.key === "Enter" && decode()}
+          placeholder="JS1GT79A1N2100001"
+          maxLength={17}
+          className="flex-1 border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary bg-muted/40 text-foreground placeholder:text-muted-foreground font-mono tracking-wider"
+        />
+        <button
+          onClick={decode}
+          disabled={loading || vin.trim().length < 11}
+          className="flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50 whitespace-nowrap"
+        >
+          {loading
+            ? <><Icon name="Loader2" size={14} className="animate-spin" /> Декодирую...</>
+            : <><Icon name="Search" size={14} /> Декодировать</>
+          }
+        </button>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 rounded-lg px-3 py-2">
+          <Icon name="AlertCircle" size={14} />
+          {error}
+        </div>
+      )}
+
+      {result && result.brand && (
+        <div className="animate-fade-in space-y-3">
+          {!result.is_motorcycle && (
+            <div className="flex items-center gap-2 text-amber-500 text-xs bg-amber-500/10 rounded-lg px-3 py-2">
+              <Icon name="AlertTriangle" size={14} />
+              По VIN определён не мотоцикл — проверьте данные перед сохранением
+            </div>
+          )}
+
+          {/* Основные данные */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            {[
+              { label: "Марка", value: _capitalize(result.brand || "") },
+              { label: "Модель", value: result.model || "—" },
+              { label: "Год", value: result.year?.toString() || "—" },
+              { label: "Объём", value: result.engine_cc ? `${result.engine_cc} куб.см` : "—" },
+              { label: "Мощность", value: result.engine_hp ? `${result.engine_hp} л.с.` : "—" },
+              { label: "Цилиндры", value: result.cylinders?.toString() || "—" },
+              { label: "Тип кузова", value: result.body_class || "—" },
+              { label: "Топливо", value: result.fuel_type || "—" },
+              { label: "Страна сборки", value: result.plant_country || "—" },
+            ].filter(i => i.value && i.value !== "—").map(item => (
+              <div key={item.label} className="bg-muted/40 rounded-lg px-3 py-2">
+                <p className="text-muted-foreground mb-0.5">{item.label}</p>
+                <p className="font-semibold">{item.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Запчасти из VIN */}
+          {result.parts_query && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                <Icon name="Package" size={12} /> Подобранные поисковые запросы для этого мотоцикла:
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {Object.entries(result.parts_query).slice(2).map(([key, query]) => (
+                  <a
+                    key={key}
+                    href={`https://www.avito.ru/rossiya?q=${encodeURIComponent(query)}&category=avtomobili_i_transport`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs border border-border bg-muted/30 px-2.5 py-1 rounded-full hover:border-primary hover:text-primary transition-colors text-foreground"
+                  >
+                    <Icon name="Search" size={11} />
+                    {_partLabel(key)}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={handleFill}
+              className="flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition"
+            >
+              <Icon name="ClipboardPaste" size={14} />
+              Подставить данные в форму
+            </button>
+            <button onClick={() => setResult(null)} className="px-3 py-2 rounded-lg text-xs border border-border hover:bg-muted transition text-foreground">
+              Закрыть
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function _capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
+function _partLabel(key: string): string {
+  const MAP: Record<string, string> = {
+    oil_filter: "Масл. фильтр",
+    air_filter: "Возд. фильтр",
+    spark_plugs: "Свечи",
+    brake_pads_front: "Колодки перед.",
+    brake_pads_rear: "Колодки зад.",
+    chain: "Цепь",
+    brake_fluid: "Торм. жидкость",
+    engine_oil: "Моторное масло",
+  };
+  return MAP[key] || key;
+}
 
 // ─── ProfileForm ──────────────────────────────────────────────────────────────
 function ProfileForm({
@@ -35,6 +216,7 @@ function ProfileForm({
 }) {
   const [form, setForm] = useState({ ...EMPTY_FORM, ...initial });
   const [saving, setSaving] = useState(false);
+  const [showVin, setShowVin] = useState(!initial?.brand);
 
   const f = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(p => ({ ...p, [key]: e.target.value }));
@@ -46,11 +228,28 @@ function ProfileForm({
     setSaving(false);
   };
 
+  const handleVinFill = (data: Partial<typeof EMPTY_FORM>) => {
+    setForm(p => ({ ...p, ...data }));
+    setShowVin(false);
+  };
+
   const inputCls = "w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary bg-muted/40 text-foreground placeholder:text-muted-foreground";
   const labelCls = "text-xs font-medium text-muted-foreground mb-1 block";
 
   return (
     <div className="animate-fade-in space-y-4">
+      {/* VIN decoder toggle */}
+      {!showVin ? (
+        <button
+          onClick={() => setShowVin(true)}
+          className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+        >
+          <Icon name="ScanLine" size={13} /> Заполнить по VIN автоматически
+        </button>
+      ) : (
+        <VinDecoder onFill={handleVinFill} />
+      )}
+
       {/* Название профиля */}
       <div>
         <label className={labelCls}>Название профиля *</label>
@@ -80,7 +279,7 @@ function ProfileForm({
         </div>
         <div>
           <label className={labelCls}>VIN</label>
-          <input value={form.vin} onChange={f("vin")} placeholder="JS1GT79A1N2100001" className={`${inputCls} font-mono`} />
+          <input value={form.vin} onChange={f("vin")} placeholder="JS1GT79A1N2100001" className={`${inputCls} font-mono tracking-wider`} />
         </div>
         <div>
           <label className={labelCls}>Дата покупки</label>
@@ -133,17 +332,36 @@ function ProfileCard({
   onSetActive: () => void;
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showVinDetails, setShowVinDetails] = useState(false);
+  const [vinData, setVinData] = useState<VinResult | null>(null);
+  const [vinLoading, setVinLoading] = useState(false);
+
+  const fetchVin = async () => {
+    if (vinData || !profile.vin) return;
+    setVinLoading(true);
+    try {
+      const res = await fetch(`${VIN_DECODE_URL}?vin=${profile.vin}&year=${profile.year}`);
+      const data: VinResult = await res.json();
+      if (data.brand) setVinData(data);
+    } catch { /* silent */ }
+    setVinLoading(false);
+  };
+
+  const handleToggleVin = () => {
+    if (!showVinDetails) fetchVin();
+    setShowVinDetails(v => !v);
+  };
 
   return (
     <div className={`section-card p-5 space-y-3 transition-all duration-300 ${profile.is_active ? "ring-2 ring-primary/50" : ""}`}>
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className={`rounded-xl p-2.5 ${profile.is_active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+          <div className={`rounded-xl p-2.5 flex-shrink-0 ${profile.is_active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
             <Icon name="Bike" size={20} />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <p className="font-display font-bold tracking-wide">{profile.name}</p>
               {profile.is_active && (
                 <span className="text-xs bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-medium">
@@ -205,7 +423,77 @@ function ProfileCard({
       </div>
 
       {profile.notes && (
-        <p className="text-xs text-muted-foreground italic px-1 border-l-2 border-primary/30 pl-3">{profile.notes}</p>
+        <p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-3">{profile.notes}</p>
+      )}
+
+      {/* VIN синхронизация */}
+      {profile.vin && (
+        <div>
+          <button
+            onClick={handleToggleVin}
+            className="flex items-center gap-1.5 text-xs text-primary hover:underline transition-colors"
+          >
+            {vinLoading
+              ? <><Icon name="Loader2" size={12} className="animate-spin" /> Загружаю данные VIN...</>
+              : showVinDetails
+                ? <><Icon name="ChevronUp" size={12} /> Скрыть данные VIN</>
+                : <><Icon name="ScanLine" size={12} /> Синхронизировать по VIN</>
+            }
+          </button>
+
+          {showVinDetails && vinData && (
+            <div className="mt-3 animate-fade-in space-y-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
+              <div className="flex items-center gap-2 text-primary">
+                <Icon name="CheckCircle2" size={14} />
+                <p className="text-xs font-semibold">Данные из базы NHTSA по VIN {profile.vin}</p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                {[
+                  { label: "Производитель", value: vinData.manufacturer },
+                  { label: "Марка", value: vinData.brand ? _capitalize(vinData.brand) : undefined },
+                  { label: "Модель", value: vinData.model },
+                  { label: "Год выпуска", value: vinData.year?.toString() },
+                  { label: "Объём (куб.см)", value: vinData.engine_cc?.toString() },
+                  { label: "Мощность (л.с.)", value: vinData.engine_hp?.toString() },
+                  { label: "Цилиндры", value: vinData.cylinders?.toString() },
+                  { label: "Топливо", value: vinData.fuel_type },
+                  { label: "Страна сборки", value: vinData.plant_country },
+                  { label: "Город сборки", value: vinData.plant_city },
+                  { label: "Тип кузова", value: vinData.body_class },
+                ].filter(i => i.value).map(item => (
+                  <div key={item.label} className="bg-muted/40 rounded-lg px-3 py-2">
+                    <p className="text-muted-foreground mb-0.5">{item.label}</p>
+                    <p className="font-semibold">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Ссылки на подбор запчастей */}
+              {vinData.parts_query && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <Icon name="Package" size={12} />
+                    Подбор запчастей на Авито для {vinData.brand ? _capitalize(vinData.brand) : ""} {vinData.model}:
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(vinData.parts_query).slice(2).map(([key, query]) => (
+                      <a
+                        key={key}
+                        href={`https://www.avito.ru/rossiya?q=${encodeURIComponent(query)}&category=avtomobili_i_transport`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs border border-border bg-card/50 px-2.5 py-1 rounded-full hover:border-primary hover:text-primary transition-colors text-foreground"
+                      >
+                        <Icon name="Search" size={10} />
+                        {_partLabel(key)}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -229,12 +517,14 @@ export function ProfileSection({
         id: res.id,
         name: data.name || `${data.brand} ${data.model}`,
         brand: data.brand, model: data.model,
-        year: Number(data.year), engine_cc: data.engine_cc ? Number(data.engine_cc) : null,
+        year: Number(data.year),
+        engine_cc: data.engine_cc ? Number(data.engine_cc) : null,
         color: data.color, vin: data.vin,
         purchase_date: data.purchase_date || null,
         purchase_km: Number(data.purchase_km) || 0,
         current_km: Number(data.current_km) || 0,
-        notes: data.notes, is_active: profiles.length === 0,
+        notes: data.notes,
+        is_active: profiles.length === 0,
         created_at: new Date().toISOString(),
       };
       onProfilesChange([...profiles, newProfile]);
@@ -250,7 +540,8 @@ export function ProfileSection({
         ...p,
         name: data.name || `${data.brand} ${data.model}`,
         brand: data.brand, model: data.model,
-        year: Number(data.year), engine_cc: data.engine_cc ? Number(data.engine_cc) : null,
+        year: Number(data.year),
+        engine_cc: data.engine_cc ? Number(data.engine_cc) : null,
         color: data.color, vin: data.vin,
         purchase_date: data.purchase_date || null,
         purchase_km: Number(data.purchase_km) || 0,
@@ -299,10 +590,7 @@ export function ProfileSection({
             <Icon name="PlusCircle" size={18} />
             <h3 className="font-display font-semibold tracking-wide">Новый мотоцикл</h3>
           </div>
-          <ProfileForm
-            onSave={handleCreate}
-            onCancel={() => setShowCreate(false)}
-          />
+          <ProfileForm onSave={handleCreate} onCancel={() => setShowCreate(false)} />
         </div>
       )}
 

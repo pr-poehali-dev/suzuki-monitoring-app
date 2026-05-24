@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Decode Suzuki GSX-S1000 VIN",
+      "method": "GET",
+      "path": "/?vin=JS1GT79A1N2100001&year=2022",
+      "expectedStatus": 200,
+      "expectedBody": { "brand": "SUZUKI", "model": "GSX-S1000", "is_motorcycle": true },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Short VIN returns error",
+      "method": "GET",
+      "path": "/?vin=ABC",
+      "expectedStatus": 400,
+      "expectedBody": { "error": "VIN должен содержать минимум 11 символов" },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

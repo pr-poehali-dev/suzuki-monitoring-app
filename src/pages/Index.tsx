@@ -120,7 +120,7 @@ export default function Index() {
           {section === "systems" && <Systems />}
           {section === "manual" && <Manual />}
           {section === "maintenance" && <Maintenance km={km} maintenanceLog={maintenanceLog} onAddLog={handleAddLog} />}
-          {section === "parts" && <Parts />}
+          {section === "parts" && <Parts activeProfile={profiles.find(p => p.is_active)} />}
           {section === "service" && <Service />}
           {section === "ai" && <AIChat km={km} />}
         </main>

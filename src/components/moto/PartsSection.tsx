@@ -1,12 +1,39 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { PARTS_DATA } from "./moto.types";
+import { MotoProfile } from "./ProfileSection";
 
 function avitoUrl(query: string) {
   return `https://www.avito.ru/rossiya?q=${encodeURIComponent(query)}&category=avtomobili_i_transport`;
 }
 
-export function Parts() {
+const PART_QUERIES: { label: string; key: string }[] = [
+  { label: "Масл. фильтр", key: "oil_filter" },
+  { label: "Возд. фильтр", key: "air_filter" },
+  { label: "Свечи", key: "spark_plugs" },
+  { label: "Колодки перед.", key: "brake_pads_front" },
+  { label: "Колодки зад.", key: "brake_pads_rear" },
+  { label: "Цепь", key: "chain" },
+  { label: "Торм. жидкость", key: "brake_fluid" },
+  { label: "Моторное масло", key: "engine_oil" },
+];
+
+function buildProfileQuery(profile: MotoProfile, partKey: string): string {
+  const base = `${profile.brand} ${profile.model}`;
+  const MAP: Record<string, string> = {
+    oil_filter: `масляный фильтр ${base}`,
+    air_filter: `воздушный фильтр ${base}`,
+    spark_plugs: `свечи зажигания ${base}`,
+    brake_pads_front: `тормозные колодки передние ${base}`,
+    brake_pads_rear: `тормозные колодки задние ${base}`,
+    chain: `приводная цепь ${base}`,
+    brake_fluid: "тормозная жидкость DOT4 мото",
+    engine_oil: `моторное масло ${profile.brand} мотоцикл 10W-40`,
+  };
+  return MAP[partKey] || base;
+}
+
+export function Parts({ activeProfile }: { activeProfile?: MotoProfile }) {
   const [filter, setFilter] = useState("Все");
   const [search, setSearch] = useState("");
   const [compare, setCompare] = useState<number[]>([]);
@@ -44,6 +71,40 @@ export function Parts() {
           </button>
         )}
       </div>
+
+      {/* Active profile VIN-based parts */}
+      {activeProfile && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 animate-fade-in">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="bg-primary/15 rounded-lg p-1.5">
+              <Icon name="Bike" size={15} className="text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                Подбор для: {activeProfile.brand} {activeProfile.model} {activeProfile.year}
+              </p>
+              {activeProfile.vin && (
+                <p className="text-xs text-muted-foreground font-mono">VIN: {activeProfile.vin}</p>
+              )}
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mb-2.5">Быстрый поиск на Авито по вашему мотоциклу:</p>
+          <div className="flex flex-wrap gap-2">
+            {PART_QUERIES.map(({ label, key }) => (
+              <a
+                key={key}
+                href={avitoUrl(buildProfileQuery(activeProfile, key))}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs border border-border bg-card/50 px-3 py-1.5 rounded-full hover:border-primary hover:text-primary transition-all text-foreground"
+              >
+                <Icon name="Search" size={11} />
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
 
       {/* Search + filters */}
       <div className="flex flex-wrap gap-3 items-center">
