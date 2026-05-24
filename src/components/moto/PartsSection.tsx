@@ -6,6 +6,36 @@ import { MotoProfile } from "./ProfileSection";
 function avitoUrl(query: string) {
   return `https://www.avito.ru/rossiya?q=${encodeURIComponent(query)}&category=avtomobili_i_transport`;
 }
+function zzapUrl(query: string) {
+  return `https://www.zzap.ru/search/?search_text=${encodeURIComponent(query)}`;
+}
+function megazipUrl(query: string) {
+  return `https://www.megazip.net/search?q=${encodeURIComponent(query)}`;
+}
+
+const SHOP_SOURCES = [
+  {
+    key: "avito",
+    label: "Авито",
+    icon: "Search",
+    getUrl: avitoUrl,
+    hoverCls: "hover:bg-[#00AAFF]/15 hover:border-[#00AAFF] hover:text-[#60C8FF]",
+  },
+  {
+    key: "zzap",
+    label: "Zzap",
+    icon: "Wrench",
+    getUrl: zzapUrl,
+    hoverCls: "hover:bg-orange-500/10 hover:border-orange-500 hover:text-orange-400",
+  },
+  {
+    key: "megazip",
+    label: "Megazip",
+    icon: "Globe",
+    getUrl: megazipUrl,
+    hoverCls: "hover:bg-emerald-500/10 hover:border-emerald-500 hover:text-emerald-400",
+  },
+];
 
 const PART_QUERIES: { label: string; key: string }[] = [
   { label: "Масл. фильтр", key: "oil_filter" },
@@ -38,6 +68,7 @@ export function Parts({ activeProfile }: { activeProfile?: MotoProfile }) {
   const [search, setSearch] = useState("");
   const [compare, setCompare] = useState<number[]>([]);
   const [showCompare, setShowCompare] = useState(false);
+  const [profileSource, setProfileSource] = useState<"avito" | "zzap" | "megazip">("avito");
 
   const categories = ["Все", "Расходники", "Оригинальные детали", "Аналоги"];
   const stockColor: Record<string, string> = { есть: "text-emerald-600", нет: "text-red-500", заказать: "text-amber-600" };
@@ -74,33 +105,50 @@ export function Parts({ activeProfile }: { activeProfile?: MotoProfile }) {
 
       {/* Active profile VIN-based parts */}
       {activeProfile && (
-        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 animate-fade-in">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="bg-primary/15 rounded-lg p-1.5">
-              <Icon name="Bike" size={15} className="text-primary" />
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 animate-fade-in space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/15 rounded-lg p-1.5">
+                <Icon name="Bike" size={15} className="text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Подбор: {activeProfile.brand} {activeProfile.model} {activeProfile.year}
+                </p>
+                {activeProfile.vin && (
+                  <p className="text-xs text-muted-foreground font-mono">VIN: {activeProfile.vin}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                Подбор для: {activeProfile.brand} {activeProfile.model} {activeProfile.year}
-              </p>
-              {activeProfile.vin && (
-                <p className="text-xs text-muted-foreground font-mono">VIN: {activeProfile.vin}</p>
-              )}
+            {/* Переключатель источника */}
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-card/60 p-0.5">
+              {(["avito", "zzap", "megazip"] as const).map(src => (
+                <button
+                  key={src}
+                  onClick={() => setProfileSource(src)}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${profileSource === src ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {src === "avito" ? "Авито" : src === "zzap" ? "Zzap" : "Megazip"}
+                </button>
+              ))}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mb-2.5">Быстрый поиск на Авито по вашему мотоциклу:</p>
           <div className="flex flex-wrap gap-2">
-            {PART_QUERIES.map(({ label, key }) => (
-              <a
-                key={key}
-                href={avitoUrl(buildProfileQuery(activeProfile, key))}
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs border border-border bg-card/50 px-3 py-1.5 rounded-full hover:border-primary hover:text-primary transition-all text-foreground"
-              >
-                <Icon name="Search" size={11} />
-                {label}
-              </a>
-            ))}
+            {PART_QUERIES.map(({ label, key }) => {
+              const query = buildProfileQuery(activeProfile, key);
+              const url = profileSource === "avito" ? avitoUrl(query) : profileSource === "zzap" ? zzapUrl(query) : megazipUrl(query);
+              return (
+                <a
+                  key={key}
+                  href={url}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs border border-border bg-card/50 px-3 py-1.5 rounded-full hover:border-primary hover:text-primary transition-all text-foreground"
+                >
+                  <Icon name="Search" size={11} />
+                  {label}
+                </a>
+              );
+            })}
           </div>
         </div>
       )}
@@ -187,37 +235,43 @@ export function Parts({ activeProfile }: { activeProfile?: MotoProfile }) {
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-2 mt-auto pt-1">
-                  {p.avitoQuery && (
-                    <a
-                      href={avitoUrl(p.avitoQuery)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 flex-1 justify-center px-3 py-2 rounded-lg text-xs font-medium border border-border bg-card/60 text-foreground hover:bg-[#00AAFF]/15 hover:border-[#00AAFF] hover:text-[#60C8FF] transition-all"
+                <div className="flex flex-col gap-1.5 mt-auto pt-1">
+                  {/* Строка поиска */}
+                  <div className="flex gap-1.5">
+                    {p.avitoQuery && SHOP_SOURCES.map(src => (
+                      <a
+                        key={src.key}
+                        href={src.getUrl(p.avitoQuery!)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`Найти на ${src.label}`}
+                        className={`flex items-center gap-1 flex-1 justify-center px-2 py-1.5 rounded-lg text-xs font-medium border border-border bg-card/60 text-foreground transition-all ${src.hoverCls}`}
+                      >
+                        <Icon name={src.icon} size={12} fallback="Search" />
+                        {src.label}
+                      </a>
+                    ))}
+                    <button
+                      onClick={() => toggleCompare(p.id)}
+                      title={inCompare ? "Убрать из сравнения" : compare.length >= 3 ? "Максимум 3 позиции" : "Добавить к сравнению"}
+                      disabled={!inCompare && compare.length >= 3}
+                      className={`px-2.5 py-1.5 rounded-lg border text-xs transition-all flex-shrink-0 ${inCompare ? "bg-accent text-accent-foreground border-accent" : "border-border bg-card/60 text-muted-foreground hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed"}`}
                     >
-                      <Icon name="Search" size={13} />
-                      Авито
-                    </a>
-                  )}
+                      <Icon name="GitCompare" size={13} />
+                    </button>
+                  </div>
+                  {/* Купить в магазине */}
                   {p.shopUrl && (
                     <a
                       href={p.shopUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 flex-1 justify-center px-3 py-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:opacity-90 transition-all"
+                      className="flex items-center gap-1.5 justify-center px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:opacity-90 transition-all"
                     >
-                      <Icon name="ShoppingCart" size={13} />
-                      Купить
+                      <Icon name="ShoppingCart" size={12} />
+                      Купить у официального дилера
                     </a>
                   )}
-                  <button
-                    onClick={() => toggleCompare(p.id)}
-                    title={inCompare ? "Убрать из сравнения" : compare.length >= 3 ? "Максимум 3 позиции" : "Добавить к сравнению"}
-                    disabled={!inCompare && compare.length >= 3}
-                    className={`px-2.5 py-2 rounded-lg border text-xs transition-all ${inCompare ? "bg-accent text-accent-foreground border-accent" : "border-border bg-card/60 text-muted-foreground hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed"}`}
-                  >
-                    <Icon name="GitCompare" size={14} />
-                  </button>
                 </div>
               </div>
             );
@@ -269,19 +323,24 @@ export function Parts({ activeProfile }: { activeProfile?: MotoProfile }) {
                 </tbody>
               </table>
             </div>
-            <div className="px-6 pb-6 grid gap-3" style={{ gridTemplateColumns: `repeat(${compareItems.length}, 1fr)` }}>
+            <div className="px-6 pb-6 grid gap-4" style={{ gridTemplateColumns: `repeat(${compareItems.length}, 1fr)` }}>
               {compareItems.map(p => (
                 <div key={p.id} className="flex flex-col gap-2">
-                  {p.avitoQuery && (
-                    <a href={avitoUrl(p.avitoQuery)} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-muted/50 text-foreground hover:bg-[#00AAFF]/15 hover:border-[#00AAFF] hover:text-[#60C8FF] transition-all">
-                      <Icon name="Search" size={13} /> Авито
+                  {p.avitoQuery && SHOP_SOURCES.map(src => (
+                    <a
+                      key={src.key}
+                      href={src.getUrl(p.avitoQuery!)}
+                      target="_blank" rel="noopener noreferrer"
+                      className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-muted/50 text-foreground transition-all ${src.hoverCls}`}
+                    >
+                      <Icon name={src.icon} size={13} fallback="Search" />
+                      {src.label}
                     </a>
-                  )}
+                  ))}
                   {p.shopUrl && (
                     <a href={p.shopUrl} target="_blank" rel="noopener noreferrer"
                       className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:opacity-90 transition-all">
-                      <Icon name="ShoppingCart" size={13} /> Купить
+                      <Icon name="ShoppingCart" size={13} /> Официальный
                     </a>
                   )}
                 </div>

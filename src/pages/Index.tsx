@@ -99,19 +99,45 @@ export default function Index() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-10 backdrop-blur border-b px-4 lg:px-6 py-3 flex items-center justify-between" style={{ backgroundColor: "hsl(var(--card) / 0.8)", borderColor: "hsl(var(--border) / 0.5)" }}>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors">
+        <header className="sticky top-0 z-10 backdrop-blur border-b px-4 lg:px-6 py-3 flex items-center justify-between gap-3" style={{ backgroundColor: "hsl(var(--card) / 0.8)", borderColor: "hsl(var(--border) / 0.5)" }}>
+          <div className="flex items-center gap-3 min-w-0">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors flex-shrink-0">
               <Icon name="Menu" size={20} />
             </button>
-            <h1 className="font-display font-semibold text-base tracking-wide">
+            <h1 className="font-display font-semibold text-base tracking-wide truncate">
               {NAV_ITEMS.find(n => n.id === section)?.label}
             </h1>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Icon name="Gauge" size={14} />
-            <span className="font-mono font-medium">{km.toLocaleString()} км</span>
-          </div>
+
+          {/* Активный профиль — правый угол */}
+          {(() => {
+            const active = profiles.find(p => p.is_active);
+            return (
+              <button
+                onClick={() => setSection("profile")}
+                className="flex items-center gap-2 flex-shrink-0 rounded-xl border px-3 py-1.5 transition-all hover:border-primary/50 hover:bg-primary/5 group"
+                style={{ borderColor: "hsl(var(--border) / 0.6)", backgroundColor: "hsl(var(--card) / 0.5)" }}
+                title="Перейти к профилям"
+              >
+                <div className="w-6 h-6 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/30 transition-colors">
+                  <Icon name="Bike" size={13} className="text-primary" />
+                </div>
+                <div className="text-left hidden sm:block">
+                  <p className="text-xs font-semibold leading-tight text-foreground truncate max-w-[140px]">
+                    {active ? `${active.brand} ${active.model}` : MOTO.model}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-tight font-mono">
+                    {active ? active.year : MOTO.year} · {km.toLocaleString()} км
+                  </p>
+                </div>
+                {/* На мобиле только пробег */}
+                <div className="sm:hidden flex items-center gap-1 text-xs text-muted-foreground">
+                  <Icon name="Gauge" size={12} />
+                  <span className="font-mono font-medium">{km.toLocaleString()}</span>
+                </div>
+              </button>
+            );
+          })()}
         </header>
 
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
