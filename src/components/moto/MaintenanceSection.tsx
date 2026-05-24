@@ -33,7 +33,7 @@ export function Maintenance({ km, maintenanceLog, onAddLog }: {
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-slate-900 text-white">
+            <tr style={{ backgroundColor: "hsl(var(--sidebar-background))", color: "hsl(var(--foreground))" }}>
               {["Операция", "Каждые (км)", "Каждые (мес.)", "Последнее (км)", "Дата", "Статус", "Приоритет"].map(h => (
                 <th key={h} className="text-left px-4 py-3 font-display font-semibold tracking-wide text-xs uppercase whitespace-nowrap">{h}</th>
               ))}
@@ -41,7 +41,7 @@ export function Maintenance({ km, maintenanceLog, onAddLog }: {
           </thead>
           <tbody className="divide-y divide-border">
             {MAINTENANCE_DATA.map((item, i) => (
-              <tr key={item.id} className={`hover:bg-muted/40 transition-colors ${i % 2 !== 0 ? "bg-slate-50/50" : ""}`}>
+              <tr key={item.id} className={`hover:bg-primary/5 transition-colors ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
                 <td className="px-4 py-3 font-medium">{item.operation}</td>
                 <td className="px-4 py-3 text-muted-foreground font-mono">{item.intervalKm > 0 ? item.intervalKm.toLocaleString() : "—"}</td>
                 <td className="px-4 py-3 text-muted-foreground font-mono">{item.intervalMonths > 0 ? item.intervalMonths : "—"}</td>
@@ -78,7 +78,7 @@ export function Maintenance({ km, maintenanceLog, onAddLog }: {
 
         {/* Форма добавления */}
         {showForm && (
-          <div className="px-5 py-4 border-b border-border bg-muted/30 animate-fade-in">
+          <div className="px-5 py-4 border-b border-border bg-muted/40 animate-fade-in">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">Операция *</label>

@@ -31,7 +31,7 @@ export function Dashboard({ km, setKm }: { km: number; setKm: (v: number) => voi
     <div className="space-y-6 animate-fade-in">
       {/* Hero */}
       <div className="section-card overflow-hidden">
-        <div className="relative bg-gradient-to-r from-slate-900 to-slate-700 p-6 text-white">
+        <div className="relative p-6 text-white" style={{ background: "linear-gradient(135deg, hsl(222 28% 6%) 0%, hsl(215 35% 14%) 50%, hsl(210 40% 18%) 100%)" }}>
           <div
             className="absolute inset-0 opacity-10"
             style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,.05) 20px, rgba(255,255,255,.05) 40px)" }}
@@ -158,7 +158,7 @@ export function Systems() {
           <Icon name="ChevronLeft" size={16} /> Все системы
         </button>
         <div className="section-card">
-          <div className="flex items-center gap-3 px-6 py-5 border-b border-border bg-slate-900 text-white rounded-t-xl">
+          <div className="flex items-center gap-3 px-6 py-5 border-b border-border text-white rounded-t-xl" style={{ background: "linear-gradient(135deg, hsl(222 28% 6%) 0%, hsl(215 35% 14%) 100%)" }}>
             <div className="bg-white/10 rounded-lg p-2">
               <Icon name={sys.icon} size={22} fallback="Settings" />
             </div>

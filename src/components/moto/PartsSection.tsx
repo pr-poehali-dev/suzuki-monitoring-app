@@ -66,7 +66,7 @@ export function Parts() {
             <button
               key={c}
               onClick={() => setFilter(c)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${filter === c ? "bg-primary text-primary-foreground border-primary" : "bg-white border-border hover:border-primary text-foreground"}`}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${filter === c ? "bg-primary text-primary-foreground border-primary" : "bg-card/60 border-border hover:border-primary text-foreground"}`}
             >
               {c}
             </button>
@@ -132,7 +132,7 @@ export function Parts() {
                       href={avitoUrl(p.avitoQuery)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 flex-1 justify-center px-3 py-2 rounded-lg text-xs font-medium border border-border bg-white hover:bg-[#00AAFF]/10 hover:border-[#00AAFF] hover:text-[#0070AA] transition-all"
+                      className="flex items-center gap-1.5 flex-1 justify-center px-3 py-2 rounded-lg text-xs font-medium border border-border bg-card/60 text-foreground hover:bg-[#00AAFF]/15 hover:border-[#00AAFF] hover:text-[#60C8FF] transition-all"
                     >
                       <Icon name="Search" size={13} />
                       Авито
@@ -153,7 +153,7 @@ export function Parts() {
                     onClick={() => toggleCompare(p.id)}
                     title={inCompare ? "Убрать из сравнения" : compare.length >= 3 ? "Максимум 3 позиции" : "Добавить к сравнению"}
                     disabled={!inCompare && compare.length >= 3}
-                    className={`px-2.5 py-2 rounded-lg border text-xs transition-all ${inCompare ? "bg-accent text-accent-foreground border-accent" : "border-border bg-white hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed"}`}
+                    className={`px-2.5 py-2 rounded-lg border text-xs transition-all ${inCompare ? "bg-accent text-accent-foreground border-accent" : "border-border bg-card/60 text-muted-foreground hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed"}`}
                   >
                     <Icon name="GitCompare" size={14} />
                   </button>
@@ -167,8 +167,8 @@ export function Parts() {
       {/* Compare modal */}
       {showCompare && compareItems.length > 0 && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowCompare(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto animate-fade-in" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 bg-white z-10">
+          <div className="rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto animate-fade-in" style={{ backgroundColor: "hsl(var(--card))", backdropFilter: "blur(16px)" }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border sticky top-0 z-10" style={{ backgroundColor: "hsl(var(--card))" }}>
               <h3 className="font-display text-xl font-bold tracking-wide">Сравнение запчастей</h3>
               <button onClick={() => setShowCompare(false)} className="p-2 rounded-lg hover:bg-muted transition-colors">
                 <Icon name="X" size={18} />
@@ -213,7 +213,7 @@ export function Parts() {
                 <div key={p.id} className="flex flex-col gap-2">
                   {p.avitoQuery && (
                     <a href={avitoUrl(p.avitoQuery)} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-white hover:bg-[#00AAFF]/10 hover:border-[#00AAFF] hover:text-[#0070AA] transition-all">
+                      className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-border bg-muted/50 text-foreground hover:bg-[#00AAFF]/15 hover:border-[#00AAFF] hover:text-[#60C8FF] transition-all">
                       <Icon name="Search" size={13} /> Авито
                     </a>
                   )}

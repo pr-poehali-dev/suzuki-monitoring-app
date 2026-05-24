@@ -4,48 +4,52 @@
 
 @layer base {
   :root {
-    --background: 210 20% 97%;
-    --foreground: 215 25% 12%;
+    /* ── Палитра из фото: тёмный уголь + синий GSX + золото вилок ── */
+    --background: 220 18% 11%;
+    --foreground: 210 25% 92%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 12%;
+    --card: 220 18% 15%;
+    --card-foreground: 210 25% 92%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 12%;
+    --popover: 220 18% 15%;
+    --popover-foreground: 210 25% 92%;
 
-    --primary: 215 80% 30%;
+    /* Синий GSX-S1000 — основной акцент */
+    --primary: 210 90% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 20% 93%;
-    --secondary-foreground: 215 25% 20%;
+    --secondary: 220 15% 20%;
+    --secondary-foreground: 210 20% 80%;
 
-    --muted: 210 15% 94%;
-    --muted-foreground: 215 15% 50%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 215 15% 55%;
 
-    --accent: 20 90% 50%;
-    --accent-foreground: 0 0% 100%;
+    /* Золото вилок — второй акцент */
+    --accent: 42 85% 52%;
+    --accent-foreground: 220 18% 10%;
 
-    --destructive: 0 84% 55%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 215 80% 30%;
+    --border: 220 15% 22%;
+    --input: 220 15% 22%;
+    --ring: 210 90% 52%;
 
     --radius: 0.75rem;
 
-    --status-ok: 142 70% 40%;
-    --status-warn: 38 92% 50%;
-    --status-alert: 0 84% 55%;
+    --status-ok: 142 60% 45%;
+    --status-warn: 38 90% 52%;
+    --status-alert: 0 72% 51%;
 
-    --sidebar-background: 215 30% 14%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 20 90% 50%;
+    /* Сайдбар — глубокий тёмно-синий, почти чёрный */
+    --sidebar-background: 222 28% 8%;
+    --sidebar-foreground: 210 20% 72%;
+    --sidebar-primary: 210 90% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 20%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 215 25% 20%;
-    --sidebar-ring: 20 90% 50%;
+    --sidebar-accent: 220 20% 14%;
+    --sidebar-accent-foreground: 210 20% 88%;
+    --sidebar-border: 220 20% 13%;
+    --sidebar-ring: 210 90% 52%;
   }
 }
 
@@ -55,8 +59,36 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     font-family: "Golos Text", sans-serif;
+    background-color: hsl(var(--background));
+    /* Фото мотоцикла как фон всего приложения */
+    background-image: url("https://cdn.poehali.dev/projects/5bdefd3b-9d03-4812-b902-123cd7b23594/bucket/89939e54-896b-46c2-9b8a-f1f1c1bbd777.jpg");
+    background-size: cover;
+    background-position: center 30%;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  /* Затемняющий оверлей поверх фото */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      hsl(222 28% 8% / 0.93) 0%,
+      hsl(220 22% 10% / 0.88) 50%,
+      hsl(215 25% 12% / 0.92) 100%
+    );
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Всё содержимое поверх оверлея */
+  #root {
+    position: relative;
+    z-index: 1;
   }
 
   h1,
@@ -86,21 +118,22 @@
   }
 
   .bg-status-ok {
-    background-color: hsl(var(--status-ok) / 0.12);
+    background-color: hsl(var(--status-ok) / 0.15);
     color: hsl(var(--status-ok));
-    border-color: hsl(var(--status-ok) / 0.3);
+    border-color: hsl(var(--status-ok) / 0.35);
   }
   .bg-status-warn {
-    background-color: hsl(var(--status-warn) / 0.12);
-    color: hsl(38 80% 35%);
-    border-color: hsl(var(--status-warn) / 0.3);
+    background-color: hsl(var(--status-warn) / 0.15);
+    color: hsl(38 85% 62%);
+    border-color: hsl(var(--status-warn) / 0.35);
   }
   .bg-status-alert {
-    background-color: hsl(var(--status-alert) / 0.12);
+    background-color: hsl(var(--status-alert) / 0.15);
     color: hsl(var(--status-alert));
-    border-color: hsl(var(--status-alert) / 0.3);
+    border-color: hsl(var(--status-alert) / 0.35);
   }
 
+  /* Сайдбар */
   .sidebar-item {
     @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer;
     color: hsl(var(--sidebar-foreground));
@@ -110,29 +143,46 @@
     color: hsl(var(--sidebar-accent-foreground));
   }
   .sidebar-item.active {
-    background-color: hsl(var(--accent) / 0.2);
-    color: hsl(var(--sidebar-primary));
-    border-left: 3px solid hsl(var(--sidebar-primary));
+    background-color: hsl(var(--primary) / 0.18);
+    color: hsl(var(--primary));
+    border-left: 3px solid hsl(var(--primary));
   }
 
+  /* Карточки — полупрозрачное стекло */
   .metric-card {
-    @apply bg-white rounded-xl border border-border p-5 transition-all duration-200;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    @apply rounded-xl border p-5 transition-all duration-200;
+    background-color: hsl(var(--card) / 0.75);
+    border-color: hsl(var(--border) / 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 2px 12px hsl(0 0% 0% / 0.25),
+      inset 0 1px 0 hsl(210 40% 100% / 0.06);
   }
   .metric-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: hsl(var(--card) / 0.88);
+    box-shadow:
+      0 6px 24px hsl(210 90% 52% / 0.12),
+      0 2px 8px hsl(0 0% 0% / 0.3);
     transform: translateY(-1px);
+    border-color: hsl(var(--primary) / 0.3);
   }
 
   .section-card {
-    @apply bg-white rounded-xl border border-border overflow-hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    @apply rounded-xl border overflow-hidden;
+    background-color: hsl(var(--card) / 0.75);
+    border-color: hsl(var(--border) / 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 2px 12px hsl(0 0% 0% / 0.25),
+      inset 0 1px 0 hsl(210 40% 100% / 0.05);
   }
 
+  /* Анимации */
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out forwards;
   }
-
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -147,7 +197,6 @@
   .animate-slide-in {
     animation: slideIn 0.25s ease-out forwards;
   }
-
   @keyframes slideIn {
     from {
       opacity: 0;
@@ -168,10 +217,10 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
+    background: hsl(var(--primary) / 0.4);
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
+    background: hsl(var(--primary) / 0.7);
   }
 }

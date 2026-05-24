@@ -46,7 +46,7 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen flex">
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-20 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
@@ -87,7 +87,7 @@ export default function Index() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-border px-4 lg:px-6 py-3 flex items-center justify-between">
+        <header className="sticky top-0 z-10 backdrop-blur border-b px-4 lg:px-6 py-3 flex items-center justify-between" style={{ backgroundColor: "hsl(var(--card) / 0.8)", borderColor: "hsl(var(--border) / 0.5)" }}>
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors">
               <Icon name="Menu" size={20} />
