@@ -63,6 +63,9 @@ export interface Part {
   originalNumber: string;
   stock: "есть" | "нет" | "заказать";
   linked: string[];
+  shopUrl?: string;
+  avitoQuery?: string;
+  price?: string;
 }
 
 export interface ServiceRecord {
@@ -238,15 +241,69 @@ export const MAINTENANCE_DATA: MaintenanceItem[] = [
 ];
 
 export const PARTS_DATA: Part[] = [
-  { id: 1, name: "Моторное масло Suzuki ECSTAR R9000 1L", category: "Расходники", system: "Система смазки", originalNumber: "99000-21E80-10G", stock: "есть", linked: ["Замена моторного масла"] },
-  { id: 2, name: "Масляный фильтр", category: "Расходники", system: "Система смазки", originalNumber: "16510-07J00", stock: "есть", linked: ["Замена масляного фильтра"] },
-  { id: 3, name: "Воздушный фильтр", category: "Расходники", system: "Впуск и выпуск", originalNumber: "13780-06J00", stock: "заказать", linked: ["Замена воздушного фильтра"] },
-  { id: 4, name: "Свечи зажигания NGK CR9EIA-9 (4 шт.)", category: "Расходники", system: "Электрооборудование", originalNumber: "09482-00535", stock: "нет", linked: ["Замена свечей зажигания"] },
-  { id: 5, name: "Тормозная жидкость DOT4 0.5L", category: "Расходники", system: "Тормоза", originalNumber: "99000-99001-DOT4", stock: "есть", linked: ["Замена тормозной жидкости"] },
-  { id: 6, name: "Охлаждающая жидкость Suzuki 1L", category: "Расходники", system: "Система охлаждения", originalNumber: "99000-99032-12A", stock: "заказать", linked: [] },
-  { id: 7, name: "Смазка цепи Chain Lube", category: "Расходники", system: "Приводная цепь", originalNumber: "—", stock: "есть", linked: ["Чистка/смазка цепи"] },
-  { id: 8, name: "Тормозные колодки передние", category: "Оригинальные детали", system: "Тормоза", originalNumber: "69100-01840", stock: "нет", linked: ["Замена тормозных колодок передних"] },
-  { id: 9, name: "Приводная цепь RK 525GXW", category: "Аналоги", system: "Приводная цепь", originalNumber: "—", stock: "заказать", linked: [] },
+  {
+    id: 1, name: "Моторное масло Suzuki ECSTAR R9000 1L", category: "Расходники",
+    system: "Система смазки", originalNumber: "99000-21E80-10G", stock: "есть",
+    linked: ["Замена моторного масла"], price: "~900 ₽",
+    shopUrl: "https://www.suzuki-accessories.ru/",
+    avitoQuery: "масло Suzuki ECSTAR R9000",
+  },
+  {
+    id: 2, name: "Масляный фильтр", category: "Расходники",
+    system: "Система смазки", originalNumber: "16510-07J00", stock: "есть",
+    linked: ["Замена масляного фильтра"], price: "~350 ₽",
+    shopUrl: "https://emoto.ru/",
+    avitoQuery: "фильтр масляный GSX-S1000 16510-07J00",
+  },
+  {
+    id: 3, name: "Воздушный фильтр", category: "Расходники",
+    system: "Впуск и выпуск", originalNumber: "13780-06J00", stock: "заказать",
+    linked: ["Замена воздушного фильтра"], price: "~1 200 ₽",
+    shopUrl: "https://emoto.ru/",
+    avitoQuery: "воздушный фильтр GSX-S1000 13780-06J00",
+  },
+  {
+    id: 4, name: "Свечи зажигания NGK CR9EIA-9 (4 шт.)", category: "Расходники",
+    system: "Электрооборудование", originalNumber: "09482-00535", stock: "нет",
+    linked: ["Замена свечей зажигания"], price: "~1 800 ₽",
+    shopUrl: "https://www.ngkrussia.ru/",
+    avitoQuery: "свечи NGK CR9EIA-9 Suzuki",
+  },
+  {
+    id: 5, name: "Тормозная жидкость DOT4 0.5L", category: "Расходники",
+    system: "Тормоза", originalNumber: "99000-99001-DOT4", stock: "есть",
+    linked: ["Замена тормозной жидкости"], price: "~400 ₽",
+    shopUrl: "https://emoto.ru/",
+    avitoQuery: "тормозная жидкость DOT4 мото",
+  },
+  {
+    id: 6, name: "Охлаждающая жидкость Suzuki 1L", category: "Расходники",
+    system: "Система охлаждения", originalNumber: "99000-99032-12A", stock: "заказать",
+    linked: [], price: "~600 ₽",
+    shopUrl: "https://emoto.ru/",
+    avitoQuery: "охлаждающая жидкость Suzuki мото",
+  },
+  {
+    id: 7, name: "Смазка цепи Chain Lube", category: "Расходники",
+    system: "Приводная цепь", originalNumber: "—", stock: "есть",
+    linked: ["Чистка/смазка цепи"], price: "~700 ₽",
+    shopUrl: "https://emoto.ru/",
+    avitoQuery: "смазка цепи мотоцикл",
+  },
+  {
+    id: 8, name: "Тормозные колодки передние", category: "Оригинальные детали",
+    system: "Тормоза", originalNumber: "69100-01840", stock: "нет",
+    linked: ["Замена тормозных колодок передних"], price: "~3 500 ₽",
+    shopUrl: "https://emoto.ru/",
+    avitoQuery: "тормозные колодки GSX-S1000 передние",
+  },
+  {
+    id: 9, name: "Приводная цепь RK 525GXW", category: "Аналоги",
+    system: "Приводная цепь", originalNumber: "—", stock: "заказать",
+    linked: [], price: "~4 500 ₽",
+    shopUrl: "https://motochains.ru/",
+    avitoQuery: "цепь RK 525GXW мотоцикл",
+  },
 ];
 
 export const SERVICE_DATA: ServiceRecord[] = [
