@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { SERVICE_DATA, AI_SUGGESTIONS, AI_RESPONSES, ChatMessage } from "./moto.types";
+import { MotoProfile } from "./ProfileSection";
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 export function Service() {
@@ -40,11 +41,15 @@ export function Service() {
 }
 
 // ─── AIChat ───────────────────────────────────────────────────────────────────
-export function AIChat({ km }: { km: number }) {
+export function AIChat({ km, activeProfile }: { km: number; activeProfile?: MotoProfile }) {
+  const motoName = activeProfile
+    ? `${activeProfile.brand} ${activeProfile.model} ${activeProfile.year}`
+    : "Suzuki GSX-S1000 2022";
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "ai",
-      text: `Привет! Я AI-помощник для вашего Suzuki GSX-S1000 2022.\n\nТекущий пробег: ${km.toLocaleString()} км. Знаю историю обслуживания и состояние всех систем. Задайте вопрос — отвечу по вашей ситуации.`,
+      text: `Привет! Я AI-помощник для вашего ${motoName}.\n\nТекущий пробег: ${km.toLocaleString()} км. Знаю историю обслуживания и состояние всех систем. Задайте вопрос — отвечу по вашей ситуации.`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -58,7 +63,7 @@ export function AIChat({ km }: { km: number }) {
     setTimeout(() => {
       const reply =
         AI_RESPONSES[text] ||
-        `Хороший вопрос о GSX-S1000! По вашему пробегу ${km.toLocaleString()} км могу сказать: мотоцикл в целом в норме, но требует внимания по тормозной жидкости и смазке цепи. Уточните вопрос — дам более конкретный ответ.`;
+        `Хороший вопрос о ${motoName}! По вашему пробегу ${km.toLocaleString()} км: мотоцикл в целом в норме, но рекомендую проверить статус регламентных работ. Уточните вопрос — дам более конкретный ответ.`;
       setMessages(m => [...m, { role: "ai", text: reply }]);
       setLoading(false);
     }, 900);
@@ -72,7 +77,7 @@ export function AIChat({ km }: { km: number }) {
         </div>
         <div>
           <h2 className="font-display text-2xl font-bold">AI-помощник</h2>
-          <p className="text-muted-foreground text-xs">GSX-S1000 · {km.toLocaleString()} км</p>
+          <p className="text-muted-foreground text-xs">{motoName} · {km.toLocaleString()} км</p>
         </div>
       </div>
 

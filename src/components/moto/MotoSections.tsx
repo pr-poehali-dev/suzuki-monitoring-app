@@ -9,6 +9,7 @@ import {
   statusLabel,
   statusIcon,
 } from "./moto.types";
+import { MotoProfile } from "./ProfileSection";
 
 // ─── StatusBadge ──────────────────────────────────────────────────────────────
 export function StatusBadge({ status }: { status: Status }) {
@@ -21,11 +22,23 @@ export function StatusBadge({ status }: { status: Status }) {
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-export function Dashboard({ km, setKm }: { km: number; setKm: (v: number) => void }) {
+export function Dashboard({
+  km, setKm, activeProfile,
+}: {
+  km: number;
+  setKm: (v: number) => void;
+  activeProfile?: MotoProfile;
+}) {
   const [editKm, setEditKm] = useState(false);
   const [inputKm, setInputKm] = useState(String(km));
   const nextTo = 12000;
   const overallStatus: Status = "warn";
+
+  // Данные из профиля или из статики по умолчанию
+  const displayModel = activeProfile ? `${activeProfile.brand} ${activeProfile.model}` : MOTO.model;
+  const displayYear = activeProfile ? activeProfile.year : MOTO.year;
+  const displayColor = activeProfile?.color || MOTO.color;
+  const displayVin = activeProfile?.vin || MOTO.vin;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -39,9 +52,15 @@ export function Dashboard({ km, setKm }: { km: number; setKm: (v: number) => voi
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-slate-400 text-xs font-display tracking-widest uppercase mb-1">Цифровое руководство</p>
-              <h1 className="text-3xl font-display font-bold tracking-wide">{MOTO.model}</h1>
-              <p className="text-slate-300 text-sm mt-1">{MOTO.year} · {MOTO.color}</p>
-              <p className="text-slate-500 text-xs mt-0.5 font-mono">VIN: {MOTO.vin}</p>
+              <h1 className="text-3xl font-display font-bold tracking-wide">{displayModel}</h1>
+              <p className="text-slate-300 text-sm mt-1">{displayYear} · {displayColor}</p>
+              {displayVin && <p className="text-slate-500 text-xs mt-0.5 font-mono">VIN: {displayVin}</p>}
+              {activeProfile?.name && (
+                <p className="text-primary/80 text-xs mt-1.5 flex items-center gap-1">
+                  <Icon name="UserCircle2" size={11} />
+                  {activeProfile.name}
+                </p>
+              )}
             </div>
             <div className="flex flex-col items-start sm:items-end gap-1">
               <StatusBadge status={overallStatus} />
@@ -88,19 +107,27 @@ export function Dashboard({ km, setKm }: { km: number; setKm: (v: number) => voi
         <div className="metric-card">
           <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">
             <Icon name="Calendar" size={16} />
-            <span>Последнее ТО</span>
+            <span>Куплен</span>
           </div>
-          <p className="text-xl font-display font-bold">2025-04-12</p>
-          <p className="text-muted-foreground text-xs mt-1">6 000 км</p>
+          <p className="text-xl font-display font-bold">
+            {activeProfile?.purchase_date || "2025-04-12"}
+          </p>
+          <p className="text-muted-foreground text-xs mt-1">
+            {activeProfile?.purchase_km ? `${activeProfile.purchase_km.toLocaleString()} км` : "6 000 км"}
+          </p>
         </div>
 
         <div className="metric-card">
           <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">
-            <Icon name="CalendarClock" size={16} />
-            <span>Следующее ТО</span>
+            <Icon name="Zap" size={16} />
+            <span>Двигатель</span>
           </div>
-          <p className="text-xl font-display font-bold">2026-04-12</p>
-          <p className="text-muted-foreground text-xs mt-1">12 000 км</p>
+          <p className="text-xl font-display font-bold">
+            {activeProfile?.engine_cc ? `${activeProfile.engine_cc} см³` : "999 см³"}
+          </p>
+          <p className="text-muted-foreground text-xs mt-1">
+            {activeProfile ? `${activeProfile.brand} ${activeProfile.model}` : "GSX-S1000"}
+          </p>
         </div>
 
         <div className="metric-card">

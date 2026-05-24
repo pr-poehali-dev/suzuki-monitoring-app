@@ -141,14 +141,14 @@ export default function Index() {
         </header>
 
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
-          {section === "dashboard" && <Dashboard km={km} setKm={handleSetKm} />}
+          {section === "dashboard" && <Dashboard km={km} setKm={handleSetKm} activeProfile={profiles.find(p => p.is_active)} />}
           {section === "profile" && <ProfileSection profiles={profiles} onProfilesChange={setProfiles} />}
           {section === "systems" && <Systems />}
           {section === "manual" && <Manual />}
           {section === "maintenance" && <Maintenance km={km} maintenanceLog={maintenanceLog} onAddLog={handleAddLog} />}
           {section === "parts" && <Parts activeProfile={profiles.find(p => p.is_active)} />}
           {section === "service" && <Service />}
-          {section === "ai" && <AIChat km={km} />}
+          {section === "ai" && <AIChat km={km} activeProfile={profiles.find(p => p.is_active)} />}
         </main>
       </div>
     </div>
